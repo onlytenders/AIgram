@@ -30,32 +30,27 @@ cd aigram/client/aigram-client
 npm install
 ```
 
-3. Create a `.env` file in the root directory and add your OpenAI API key:
-```
-VITE_OPENAI_API_KEY=your_api_key_here
-```
-
-4. Start the development server:
+3. Start the development server:
 ```bash
 npm run dev
 ```
 
-5. Open [http://localhost:5173](http://localhost:5173) in your browser.
+4. Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ## ⚙️ Configuration
 
 ### OpenAI API Key
 
-AIgram requires an OpenAI API key to function. You can:
+AIgram requires an OpenAI API key to function. You can enter it directly in the app:
 
-1. Add it to your `.env` file as shown above
-2. Enter it in the app's settings dialog
+1. After starting the app, click on the settings button.
+2. Enter your OpenAI API key in the dialog.
 
 To get an API key:
 1. Create an account at [OpenAI](https://platform.openai.com/)
 2. Navigate to API keys section
 3. Create a new API key
-4. Copy and paste it into AIgram
+4. Copy and paste it into the app's settings.
 
 ## 💻 Tech Stack
 
@@ -80,3 +75,7 @@ MIT
 
 - Inspired by Telegram's UI
 - Powered by OpenAI's API
+
+## 🌐 Deployment
+
+Check out the live version of AIgram [here](https://ai-gram-ashy.vercel.app/).
