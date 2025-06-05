@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { ChatList } from './widgets/ChatList/ui/ChatList';
 import { ChatPage } from './pages/Chat/ui/ChatPage';
 import { layoutStyles } from './shared/styles/layout';

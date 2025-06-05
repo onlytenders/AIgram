@@ -17,7 +17,7 @@ const truncateMessage = (message: string) => {
     return message.substring(0, MAX_MESSAGE_LENGTH) + '...';
 };
 
-const ChatItem: FC<ChatItemProps> = ({ id, name, lastMessage, timestamp, isOnline, onClick }) => {
+const ChatItem: FC<ChatItemProps> = ({ name, lastMessage, timestamp, isOnline, onClick }) => {
     return (
         <div 
             className="flex items-center p-4 hover:bg-gray-50 cursor-pointer chat-transition animate-fade border-b border-gray-200"

@@ -12,7 +12,6 @@ export interface Message {
 class MessagesStore {
     private messages: Map<string, Message[]> = new Map();
     private openai: OpenAIService;
-    private chatRoles: Map<string, string> = new Map();
 
     constructor() {
         this.openai = OpenAIService.getInstance();
