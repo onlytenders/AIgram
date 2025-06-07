@@ -5,6 +5,16 @@ import { ChatPage } from './pages/Chat/ui/ChatPage';
 import { layoutStyles } from './shared/styles/layout';
 import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 1000 * 60 * 5, // 5 minutes
+    },
+  },
+});
 
 const AppLayout: FC = () => {
   const location = useLocation();
@@ -67,9 +77,11 @@ const AppLayout: FC = () => {
 
 const App: FC = () => {
   return (
-    <BrowserRouter>
-      <AppLayout />
-    </BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <AppLayout />
+      </BrowserRouter>
+    </QueryClientProvider>
   );
 };
 

@@ -4,20 +4,22 @@ import { Message as MessageComponent } from '../../../entities/Message/ui/Messag
 import { TypingIndicator } from '../../../entities/Message/ui/TypingIndicator';
 import { themeClasses } from '../../../shared/styles';
 import { layoutStyles } from '../../../shared/styles/layout';
-import { messagesStore } from '../../../entities/Message/model/messages.store';
 import { chatsStore } from '../../../entities/Chat/model/chats.store';
 import { useState, useEffect, useRef } from 'react';
-import type { Message } from '../../../entities/Message/model/messages.store';
+import { useMessages } from '../../../shared/hooks/useMessages';
+import { useChat } from '../../../shared/hooks/useChat';
 
 export const ChatPage: FC = () => {
     const { chatId } = useParams();
     const navigate = useNavigate();
     const isMobile = window.innerWidth < 768;
-    const [messages, setMessages] = useState<Message[]>([]);
     const [inputText, setInputText] = useState('');
     const [chatName, setChatName] = useState('');
-    const [isTyping, setIsTyping] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    // Use TanStack Query hooks
+    const { data: messages = [], isLoading: messagesLoading } = useMessages(chatId);
+    const { sendMessage, isLoading: isSending, error: sendError } = useChat();
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -25,52 +27,35 @@ export const ChatPage: FC = () => {
 
     useEffect(() => {
         if (chatId) {
-            if (chatsStore.getChat(chatId) !== undefined) {
-                setMessages(messagesStore.getMessages(chatId));
-            } else {
-                navigate('/');
-            }
             const chat = chatsStore.getChat(chatId);
             if (chat) {
                 setChatName(chat.name);
+            } else {
+                navigate('/');
             }
         } else {
-            setMessages([]);
             setChatName('');
         }
-    }, [chatId]);
+    }, [chatId, navigate]);
 
     useEffect(() => {
         scrollToBottom();
-    }, [messages, isTyping]);
+    }, [messages, isSending]);
 
     const handleSendMessage = async () => {
-        if (!chatId || !inputText.trim()) return;
+        if (!chatId || !inputText.trim() || isSending) return;
 
         const text = inputText.trim();
         setInputText('');
-        setIsTyping(true);
 
         try {
-            // First update local state with user message
-            const userMessage: Message = {
-                id: Date.now().toString(),
+            sendMessage({
+                chatId,
                 text,
-                isOutgoing: true,
-                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                chatId
-            };
-            setMessages(prev => [...prev, userMessage]);
-
-            // Then send message and wait for response
-            await messagesStore.sendMessage(chatId, text);
-            
-            // Update messages with AI response
-            setMessages(messagesStore.getMessages(chatId));
+                chatName
+            });
         } catch (error) {
             console.error('Failed to send message:', error);
-        } finally {
-            setIsTyping(false);
         }
     };
 
@@ -87,6 +72,17 @@ export const ChatPage: FC = () => {
             <div className="h-full w-full flex items-center justify-center">
                 <div className="text-center text-gray-500 p-8">
                     <p className="text-lg font-medium">Pick a chat or create a new one</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Loading state
+    if (messagesLoading) {
+        return (
+            <div className="h-full w-full flex items-center justify-center">
+                <div className="text-center text-gray-500 p-8">
+                    <p className="text-lg font-medium">Loading chat...</p>
                 </div>
             </div>
         );
@@ -120,6 +116,11 @@ export const ChatPage: FC = () => {
             {/* Messages Area */}
             <div className={layoutStyles.contentArea}>
                 <div className="p-4">
+                    {sendError && (
+                        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                            Failed to send message. Please try again.
+                        </div>
+                    )}
                     <div className="space-y-4">
                         {messages.map((message) => (
                             <div 
@@ -134,7 +135,7 @@ export const ChatPage: FC = () => {
                             </div>
                         ))}
                     </div>
-                    {isTyping && <TypingIndicator />}
+                    {isSending && <TypingIndicator />}
                     <div ref={messagesEndRef} />
                 </div>
             </div>
@@ -149,15 +150,20 @@ export const ChatPage: FC = () => {
                         onKeyPress={handleKeyPress}
                         placeholder="Type a message..."
                         className="flex-1 px-4 py-2 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        disabled={isSending}
                     />
                     <button 
                         onClick={handleSendMessage}
-                        disabled={!inputText.trim() || isTyping}
+                        disabled={!inputText.trim() || isSending}
                         className="p-2 text-white bg-blue-500 rounded-full hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
+                        {isSending ? (
+                            <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M12 5l7 7-7 7" />
+                            </svg>
+                        )}
                     </button>
                 </div>
             </div>

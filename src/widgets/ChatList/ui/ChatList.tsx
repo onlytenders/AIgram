@@ -1,9 +1,10 @@
 import type { FC } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { themeClasses } from '../../../shared/styles';
-import { chatsStore, type Chat } from '../../../entities/Chat/model/chats.store';
-import { useState, useEffect } from 'react';
+import { type Chat } from '../../../entities/Chat/model/chats.store';
+import { useState } from 'react';
 import { SettingsDialog } from '../../Settings/ui/SettingsDialog';
+import { useChats, useCreateChat } from '../../../shared/hooks/useChats';
 
 interface ChatItemProps extends Chat {
     onClick: () => void;
@@ -46,19 +47,14 @@ const ChatItem: FC<ChatItemProps> = ({ name, lastMessage, timestamp, isOnline, o
 
 export const ChatList: FC = () => {
     const navigate = useNavigate();
-    const [chats, setChats] = useState<Chat[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [isCreatingChat, setIsCreatingChat] = useState(false);
     const [newChatName, setNewChatName] = useState('');
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-    useEffect(() => {
-        const updateChats = () => setChats(chatsStore.getChats());
-        updateChats();
-
-        window.addEventListener('chatUpdate', updateChats);
-        return () => window.removeEventListener('chatUpdate', updateChats);
-    }, []);
+    // Use TanStack Query hooks
+    const { data: chats = [], isLoading: chatsLoading, error: chatsError } = useChats();
+    const { mutate: createChat, isPending: isCreatingNewChat, error: createError } = useCreateChat();
 
     const handleCreateChat = () => {
         if (!isCreatingChat) {
@@ -66,12 +62,17 @@ export const ChatList: FC = () => {
             return;
         }
 
-        if (newChatName.trim()) {
-            const newChat = chatsStore.createNewChat(newChatName.trim());
-            setChats(chatsStore.getChats());
-            setIsCreatingChat(false);
-            setNewChatName('');
-            navigate(`/chat/${newChat.id}`);
+        if (newChatName.trim() && !isCreatingNewChat) {
+            createChat(newChatName.trim(), {
+                onSuccess: (newChat) => {
+                    setIsCreatingChat(false);
+                    setNewChatName('');
+                    navigate(`/chat/${newChat.id}`);
+                },
+                onError: (error) => {
+                    console.error('Failed to create chat:', error);
+                }
+            });
         }
     };
 
@@ -84,6 +85,29 @@ export const ChatList: FC = () => {
         chat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (chat.lastMessage && chat.lastMessage.toLowerCase().includes(searchQuery.toLowerCase()))
     );
+
+    // Loading state
+    if (chatsLoading) {
+        return (
+            <div className="h-full w-full flex items-center justify-center">
+                <div className="text-center text-gray-500 p-8">
+                    <p className="text-lg font-medium">Loading chats...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Error state
+    if (chatsError) {
+        return (
+            <div className="h-full w-full flex items-center justify-center">
+                <div className="text-center text-red-500 p-8">
+                    <p className="text-lg font-medium">Failed to load chats</p>
+                    <p className="text-sm mt-2">Please refresh the page</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="h-full w-full flex flex-col">
@@ -133,7 +157,11 @@ export const ChatList: FC = () => {
                             placeholder="Enter chat name..."
                             className="w-full px-4 py-2 bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             autoFocus
+                            disabled={isCreatingNewChat}
                         />
+                        {createError && (
+                            <p className="text-red-500 text-sm mt-2">Failed to create chat. Please try again.</p>
+                        )}
                     </div>
                 )}
                 <div className="p-4 flex gap-2 h-20">
@@ -141,13 +169,19 @@ export const ChatList: FC = () => {
                         <>
                             <button
                                 onClick={handleCreateChat}
-                                className="flex-1 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg flex items-center justify-center gap-2 transition-colors"
+                                disabled={isCreatingNewChat || !newChatName.trim()}
+                                className="flex-1 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                Create Chat
+                                {isCreatingNewChat ? (
+                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                ) : (
+                                    'Create Chat'
+                                )}
                             </button>
                             <button
                                 onClick={handleCancelNewChat}
-                                className="py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
+                                disabled={isCreatingNewChat}
+                                className="py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors disabled:opacity-50"
                             >
                                 Cancel
                             </button>
