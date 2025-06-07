@@ -1,18 +1,65 @@
 @import "tailwindcss";
 
-/* 1. Use a more-intuitive box-sizing model */
+/* CSS Variables for theming */
+:root {
+  /* Default light theme colors (will be overridden by JS) */
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f8fafc;
+  --color-bg-tertiary: #f1f5f9;
+  --color-bg-chat: #ffffff;
+  --color-bg-message-incoming: #f1f5f9;
+  --color-bg-message-outgoing: #3b82f6;
+
+  --color-text-primary: #1e293b;
+  --color-text-secondary: #64748b;
+  --color-text-tertiary: #94a3b8;
+  --color-text-inverse: #ffffff;
+
+  --color-border-primary: #e2e8f0;
+  --color-border-secondary: #cbd5e1;
+  --color-border-focus: #3b82f6;
+
+  --color-status-online: #10b981;
+  --color-status-success: #059669;
+  --color-status-error: #dc2626;
+  --color-status-warning: #d97706;
+  --color-status-info: #0ea5e9;
+
+  --color-interactive-primary: #3b82f6;
+  --color-interactive-primary-hover: #2563eb;
+  --color-interactive-secondary: #64748b;
+  --color-interactive-secondary-hover: #475569;
+}
+
+/* Theme-aware utility classes */
+.bg-theme-primary { background-color: var(--color-bg-primary); }
+.bg-theme-secondary { background-color: var(--color-bg-secondary); }
+.bg-theme-tertiary { background-color: var(--color-bg-tertiary); }
+.bg-theme-chat { background-color: var(--color-bg-chat); }
+.bg-theme-message-incoming { background-color: var(--color-bg-message-incoming); }
+.bg-theme-message-outgoing { background-color: var(--color-bg-message-outgoing); }
+
+.text-theme-primary { color: var(--color-text-primary); }
+.text-theme-secondary { color: var(--color-text-secondary); }
+.text-theme-tertiary { color: var(--color-text-tertiary); }
+.text-theme-inverse { color: var(--color-text-inverse); }
+
+.border-theme-primary { border-color: var(--color-border-primary); }
+.border-theme-secondary { border-color: var(--color-border-secondary); }
+.border-theme-focus { border-color: var(--color-border-focus); }
+
+/* CSS Reset with improved theming support */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
-/* 2. Remove default margin */
 * {
   margin: 0;
 }
 
-/* 3. Enable keyword animations */
+/* Enable keyword animations */
 @media (prefers-reduced-motion: no-preference) {
   html {
     interpolate-size: allow-keywords;
@@ -20,13 +67,19 @@
 }
 
 body {
-  /* 4. Add accessible line-height */
+  /* Improved text rendering */
   line-height: 1.5;
-  /* 5. Improve text rendering */
   -webkit-font-smoothing: antialiased;
+  
+  /* Theme-aware background */
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  
+  /* Smooth theme transitions */
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
 }
 
-/* 6. Improve media defaults */
+/* Improved media defaults */
 img,
 picture,
 video,
@@ -36,7 +89,7 @@ svg {
   max-width: 100%;
 }
 
-/* 7. Inherit fonts for form controls */
+/* Inherit fonts for form controls */
 input,
 button,
 textarea,
@@ -44,7 +97,7 @@ select {
   font: inherit;
 }
 
-/* 8. Avoid text overflows */
+/* Improved line wrapping */
 p,
 h1,
 h2,
@@ -55,7 +108,6 @@ h6 {
   overflow-wrap: break-word;
 }
 
-/* 9. Improve line wrapping */
 p {
   text-wrap: pretty;
 }
@@ -69,26 +121,20 @@ h6 {
   text-wrap: balance;
 }
 
-/*
-  10. Create a root stacking context
-*/
+/* Root stacking context */
 #root,
 #__next {
   isolation: isolate;
 }
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* Ensure proper height */
+/* Ensure proper height and prevent overflow */
 html, body, #root {
   height: 100%;
   width: 100%;
   overflow: hidden;
 }
 
-/* Animations */
+/* Enhanced animations with theme awareness */
 @keyframes slideUp {
   from {
     opacity: 0;
@@ -120,6 +166,17 @@ html, body, #root {
   }
 }
 
+@keyframes scale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 /* Animation utility classes */
 .animate-slide-up {
   animation: slideUp 0.3s ease-out forwards;
@@ -133,7 +190,11 @@ html, body, #root {
   animation: fadeIn 0.3s ease-out forwards;
 }
 
-/* Transition classes */
+.animate-scale {
+  animation: scale 0.2s ease-out forwards;
+}
+
+/* Transition classes with theme awareness */
 .chat-transition {
   transition: all 0.3s ease-out;
 }
@@ -166,8 +227,66 @@ html, body, #root {
   transition: opacity 200ms, transform 200ms;
 }
 
-/* Fix for jumping animations */
+/* Message container improvements */
 .message-container {
   position: relative;
   min-height: 0;
 }
+
+/* Theme-specific body classes for additional styling */
+body.theme-light {
+  /* Light theme specific styles */
+}
+
+body.theme-dark {
+  /* Dark theme specific styles */
+  scrollbar-color: #4a5568 #2d3748;
+}
+
+/* Custom scrollbars for dark theme */
+body.theme-dark ::-webkit-scrollbar {
+  width: 8px;
+}
+
+body.theme-dark ::-webkit-scrollbar-track {
+  background: #2d3748;
+}
+
+body.theme-dark ::-webkit-scrollbar-thumb {
+  background: #4a5568;
+  border-radius: 4px;
+}
+
+body.theme-dark ::-webkit-scrollbar-thumb:hover {
+  background: #5a6574;
+}
+
+/* Focus styles that work with themes */
+.focus-ring {
+  outline: none;
+}
+
+.focus-ring:focus {
+  box-shadow: 0 0 0 2px var(--color-border-focus);
+}
+
+/* Improved form elements with theme support */
+input[type="text"],
+input[type="password"],
+textarea {
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  border-color: var(--color-border-primary);
+  transition: border-color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+textarea:focus {
+  border-color: var(--color-border-focus);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

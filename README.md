@@ -13,6 +13,9 @@ AIgram is a Telegram-style chat application that connects to OpenAI's API to pro
 - **Message History** - All conversations are saved locally
 - **Clean, Modern UI** - Telegram-inspired interface with smooth animations
 
+07.06.25
+- **Dark mode feature added** - interface can be light, dark or correspond to the system settings
+
 ## 📱 Screenshots
 
 [Screenshots would go here]

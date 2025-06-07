@@ -5,6 +5,7 @@ import { type Chat } from '../../../entities/Chat/model/chats.store';
 import { useState } from 'react';
 import { SettingsDialog } from '../../Settings/ui/SettingsDialog';
 import { useChats, useCreateChat } from '../../../shared/hooks/useChats';
+import { useTheme } from '../../../shared/hooks/useTheme';
 
 interface ChatItemProps extends Chat {
     onClick: () => void;
@@ -19,25 +20,31 @@ const truncateMessage = (message: string) => {
 };
 
 const ChatItem: FC<ChatItemProps> = ({ name, lastMessage, timestamp, isOnline, onClick }) => {
+    const { getThemeClass, isDark } = useTheme();
+    
     return (
         <div 
-            className="flex items-center p-4 hover:bg-gray-50 cursor-pointer chat-transition animate-fade border-b border-gray-200"
+            className={`flex items-center p-4 cursor-pointer chat-transition animate-fade border-b border-theme-primary ${
+                getThemeClass('hover:bg-gray-50', 'hover:bg-gray-700')
+            }`}
             onClick={onClick}
         >
             <div className="relative">
-                <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center font-medium ${
+                    getThemeClass('bg-gray-200 text-gray-700', 'bg-gray-600 text-gray-200')
+                }`}>
                     {name[0].toUpperCase()}
                 </div>
                 {isOnline && (
-                    <div className={`absolute bottom-0 right-0 ${themeClasses.onlineIndicator}`} />
+                    <div className={themeClasses.onlineIndicator} />
                 )}
             </div>
             <div className="ml-4 flex-1 min-w-0 px-3">
                 <div className="flex justify-between items-center">
-                    <h3 className="font-medium text-gray-900 truncate">{truncateMessage(name)}</h3>
-                    <span className="text-sm text-gray-500 ml-2 flex-shrink-0">{timestamp}</span>
+                    <h3 className="font-medium text-theme-primary truncate">{truncateMessage(name)}</h3>
+                    <span className="text-sm text-theme-secondary ml-2 flex-shrink-0">{timestamp}</span>
                 </div>
-                <p className="text-sm text-gray-500 line-clamp-1">
+                <p className="text-sm text-theme-secondary line-clamp-1">
                     {truncateMessage(lastMessage || '* Empty chat *')}
                 </p>
             </div>
@@ -51,6 +58,7 @@ export const ChatList: FC = () => {
     const [isCreatingChat, setIsCreatingChat] = useState(false);
     const [newChatName, setNewChatName] = useState('');
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const { getThemeClass, isDark } = useTheme();
 
     // Use TanStack Query hooks
     const { data: chats = [], isLoading: chatsLoading, error: chatsError } = useChats();
@@ -89,8 +97,8 @@ export const ChatList: FC = () => {
     // Loading state
     if (chatsLoading) {
         return (
-            <div className="h-full w-full flex items-center justify-center">
-                <div className="text-center text-gray-500 p-8">
+            <div className="h-full w-full flex items-center justify-center bg-theme-primary">
+                <div className="text-center text-theme-secondary p-8">
                     <p className="text-lg font-medium">Loading chats...</p>
                 </div>
             </div>
@@ -100,7 +108,7 @@ export const ChatList: FC = () => {
     // Error state
     if (chatsError) {
         return (
-            <div className="h-full w-full flex items-center justify-center">
+            <div className="h-full w-full flex items-center justify-center bg-theme-primary">
                 <div className="text-center text-red-500 p-8">
                     <p className="text-lg font-medium">Failed to load chats</p>
                     <p className="text-sm mt-2">Please refresh the page</p>
@@ -110,20 +118,30 @@ export const ChatList: FC = () => {
     }
 
     return (
-        <div className="h-full w-full flex flex-col">
-            <div className={`p-4 ${filteredChats.length > 0 ? 'border-b border-gray-200' : ''} flex items-center gap-2 h-18`}>
+        <div className="h-full w-full flex flex-col bg-theme-primary">
+            <div className={`p-4 ${filteredChats.length > 0 ? 'border-b border-theme-primary' : ''} flex items-center gap-2 h-18`}>
                 {filteredChats.length > 0 && (
                     <input
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search chats..."
-                        className="flex-1 px-4 py-2 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className={`flex-1 px-4 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                            getThemeClass(
+                                'bg-gray-100 text-gray-900 placeholder-gray-500',
+                                'bg-gray-700 text-white placeholder-gray-400'
+                            )
+                        }`}
                     />
                 )}
                 <button
                     onClick={() => setIsSettingsOpen(true)}
-                    className="p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                    className={`p-2 rounded-full transition-colors ${
+                        getThemeClass(
+                            'text-gray-600 hover:bg-gray-100',
+                            'text-gray-300 hover:bg-gray-700'
+                        )
+                    }`}
                     title="Settings"
                 >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -135,7 +153,7 @@ export const ChatList: FC = () => {
             <div className="flex-1 overflow-y-auto">
                 {filteredChats.length === 0 && (
                     <div className="flex-1 flex items-center justify-center h-full">
-                        <p className="text-gray-500 font-medium text-lg">Click on the + button to create a new chat</p>
+                        <p className="text-theme-secondary font-medium text-lg">Click on the + button to create a new chat</p>
                     </div>
                 )}
                 {filteredChats.map((chat) => (
@@ -147,15 +165,20 @@ export const ChatList: FC = () => {
                 ))}
             </div>
             {/* New Chat Section - Now properly sticky */}
-            <div className="sticky bottom-0 bg-white border-t border-gray-200">
+            <div className="sticky bottom-0 bg-theme-primary border-t border-theme-primary">
                 {isCreatingChat && (
-                    <div className="p-4 border-b border-gray-200 animate-slide-up">
+                    <div className="p-4 border-b border-theme-primary animate-slide-up">
                         <input
                             type="text"
                             value={newChatName}
                             onChange={(e) => setNewChatName(e.target.value)}
                             placeholder="Enter chat name..."
-                            className="w-full px-4 py-2 bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className={`w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                                getThemeClass(
+                                    'bg-gray-100 text-gray-900 placeholder-gray-500',
+                                    'bg-gray-700 text-white placeholder-gray-400'
+                                )
+                            }`}
                             autoFocus
                             disabled={isCreatingNewChat}
                         />
@@ -181,7 +204,12 @@ export const ChatList: FC = () => {
                             <button
                                 onClick={handleCancelNewChat}
                                 disabled={isCreatingNewChat}
-                                className="py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors disabled:opacity-50"
+                                className={`py-2 px-4 rounded-lg transition-colors disabled:opacity-50 ${
+                                    getThemeClass(
+                                        'bg-gray-100 hover:bg-gray-200 text-gray-700',
+                                        'bg-gray-700 hover:bg-gray-600 text-gray-200'
+                                    )
+                                }`}
                             >
                                 Cancel
                             </button>
@@ -199,9 +227,10 @@ export const ChatList: FC = () => {
                     )}
                 </div>
             </div>
-            <SettingsDialog
-                isOpen={isSettingsOpen}
-                onClose={() => setIsSettingsOpen(false)}
+
+            <SettingsDialog 
+                isOpen={isSettingsOpen} 
+                onClose={() => setIsSettingsOpen(false)} 
             />
         </div>
     );

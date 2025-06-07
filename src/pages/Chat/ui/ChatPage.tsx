@@ -8,6 +8,7 @@ import { chatsStore } from '../../../entities/Chat/model/chats.store';
 import { useState, useEffect, useRef } from 'react';
 import { useMessages } from '../../../shared/hooks/useMessages';
 import { useChat } from '../../../shared/hooks/useChat';
+import { useTheme } from '../../../shared/hooks/useTheme';
 
 export const ChatPage: FC = () => {
     const { chatId } = useParams();
@@ -16,6 +17,7 @@ export const ChatPage: FC = () => {
     const [inputText, setInputText] = useState('');
     const [chatName, setChatName] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const { getThemeClass, isDark } = useTheme();
 
     // Use TanStack Query hooks
     const { data: messages = [], isLoading: messagesLoading } = useMessages(chatId);
@@ -69,8 +71,8 @@ export const ChatPage: FC = () => {
     // Empty state when no chat is selected
     if (!chatId) {
         return (
-            <div className="h-full w-full flex items-center justify-center">
-                <div className="text-center text-gray-500 p-8">
+            <div className="h-full w-full flex items-center justify-center bg-theme-chat">
+                <div className="text-center text-theme-secondary p-8">
                     <p className="text-lg font-medium">Pick a chat or create a new one</p>
                 </div>
             </div>
@@ -80,8 +82,8 @@ export const ChatPage: FC = () => {
     // Loading state
     if (messagesLoading) {
         return (
-            <div className="h-full w-full flex items-center justify-center">
-                <div className="text-center text-gray-500 p-8">
+            <div className="h-full w-full flex items-center justify-center bg-theme-chat">
+                <div className="text-center text-theme-secondary p-8">
                     <p className="text-lg font-medium">Loading chat...</p>
                 </div>
             </div>
@@ -89,27 +91,27 @@ export const ChatPage: FC = () => {
     }
 
     return (
-        <div className="h-full w-full flex flex-col">
+        <div className="h-full w-full flex flex-col bg-theme-chat">
             {/* Mobile Header */}
-            <div className={layoutStyles.mobileNavbar}>
+            <div className={`${layoutStyles.mobileNavbar} text-theme-primary`}>
                 <button 
                     onClick={() => navigate('/')}
-                    className="flex items-center gap-2"
+                    className={`flex items-center gap-2 ${getThemeClass('text-gray-600', 'text-gray-300')}`}
                 >
-                    <svg className="w-6 h-6" fill="none" stroke="gray" viewBox="0 0 24 24">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M15 19l-7-7 7-7" />
                     </svg>
                     {isMobile && <span>Back</span>}
                 </button>
-                <h1 className="text-xl font-semibold">{chatName}</h1>
+                <h1 className="text-xl font-semibold text-theme-primary">{chatName}</h1>
                 <div className="w-6" />
             </div>
 
             {/* Chat Header - Only visible on desktop */}
             <div className={`${themeClasses.chatHeader} hidden md:flex`}>
                 <div className="flex-1">
-                    <h2 className="font-semibold">{chatName}</h2>
-                    <p className="text-sm text-gray-500">online</p>
+                    <h2 className="font-semibold text-theme-primary">{chatName}</h2>
+                    <p className="text-sm text-theme-secondary">online</p>
                 </div>
             </div>
 
@@ -149,7 +151,12 @@ export const ChatPage: FC = () => {
                         onChange={(e) => setInputText(e.target.value)}
                         onKeyPress={handleKeyPress}
                         placeholder="Type a message..."
-                        className="flex-1 px-4 py-2 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className={`flex-1 px-4 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                            getThemeClass(
+                                'bg-gray-100 text-gray-900 placeholder-gray-500',
+                                'bg-gray-700 text-white placeholder-gray-400'
+                            )
+                        }`}
                         disabled={isSending}
                     />
                     <button 
