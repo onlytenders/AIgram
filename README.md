@@ -24,7 +24,7 @@ AIgram is a Telegram-style chat application that connects to OpenAI's API to pro
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/aigram.git
+git clone https://github.com/onlytenders/aigram.git
 cd aigram/client/aigram-client
 ```
 
